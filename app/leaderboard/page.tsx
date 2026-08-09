@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
 
 export default async function LeaderboardPage() {
   const supabase = await createClient();
@@ -58,20 +59,26 @@ export default async function LeaderboardPage() {
               </div>
 
               <div className="playerInfo">
-                <strong>
-                  {player.display_name ||
-                    player.username ||
-                    "User"}
-                </strong>
+                <Link
+                  href={`/profile/${player.username}`}
+                  className="leaderboardProfile"
+                >
+                  <strong>
+                    {player.display_name ||
+                      player.username ||
+                      "User"}
+                  </strong>
 
-                <span>
-                  @{player.username}
-                </span>
+                  <span>
+                    @{player.username}
+                  </span>
+                </Link>
               </div>
 
               <div className="rating">
                 <strong>
-                  ⭐ {Number(
+                  ⭐{" "}
+                  {Number(
                     player.average_rating
                   ).toFixed(2)}
                 </strong>
