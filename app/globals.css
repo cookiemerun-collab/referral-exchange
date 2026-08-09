@@ -196,3 +196,128 @@ a {
     margin: 0 20px 70px;
   }
 }
+
+/* AUTH */
+
+.authPage {
+  min-height: calc(100vh - 72px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 20px;
+}
+
+.authCard {
+  width: 100%;
+  max-width: 430px;
+  padding: 35px;
+  border: 1px solid #292c37;
+  border-radius: 18px;
+  background: #0e1016;
+}
+
+.authCard h1 {
+  font-size: 38px;
+  line-height: 1;
+  letter-spacing: -1.5px;
+  margin: 18px 0 12px;
+}
+
+.authDescription {
+  color: #969ba9;
+  line-height: 1.5;
+  margin-bottom: 28px;
+}
+
+.authCard form {
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+}
+
+.authCard label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #d7d9e0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.authCard input {
+  width: 100%;
+  padding: 13px 14px;
+  border-radius: 9px;
+  border: 1px solid #303440;
+  background: #08090d;
+  color: white;
+  outline: none;
+  font-size: 15px;
+}
+
+.authCard input:focus {
+  border-color: #7c5cff;
+}
+
+.googleButton {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #303440;
+  border-radius: 9px;
+  background: #171922;
+  color: white;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.googleButton:hover {
+  background: #1e212b;
+}
+
+.authSubmit {
+  border: 0;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.authSubmit:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #626775;
+  font-size: 10px;
+  margin: 22px 0;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  height: 1px;
+  background: #292c37;
+  flex: 1;
+}
+
+.authMessage {
+  margin-top: 18px;
+  padding: 12px;
+  border-radius: 9px;
+  background: #171922;
+  color: #b8bbc7;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.switchAuth {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #9387ff;
+  margin-top: 22px;
+  cursor: pointer;
+  font-size: 13px;
+}
