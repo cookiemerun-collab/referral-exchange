@@ -980,3 +980,172 @@ a {
   color: #9ca1b0;
   font-size: 13px;
 }
+
+/* LISTING DETAILS */
+
+.listingDetail {
+  max-width: 1050px;
+  margin: 0 auto;
+}
+
+.listingHeader {
+  margin-bottom: 30px;
+}
+
+.listingHeader h1 {
+  margin: 12px 0 8px;
+  font-size: 42px;
+  letter-spacing: -2px;
+}
+
+.listingDescription {
+  color: #9da2b0;
+  max-width: 700px;
+  line-height: 1.6;
+}
+
+.listingGrid {
+  display: grid;
+  grid-template-columns: 1fr 330px;
+  gap: 20px;
+}
+
+.listingMain {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.listingCard,
+.sellerCard,
+.requestCard {
+  padding: 20px;
+  border: 1px solid #292c37;
+  border-radius: 14px;
+  background: #0e1016;
+}
+
+.listingCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.listingLabel {
+  color: #777c89;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.listingCard strong {
+  font-size: 15px;
+}
+
+.referralButton {
+  display: inline-flex;
+  width: fit-content;
+  padding: 11px 16px;
+  border-radius: 9px;
+  background: #a69cff;
+  color: #08090d;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.referralButton:hover {
+  opacity: 0.9;
+}
+
+.closedLink {
+  color: #777c89;
+  font-size: 13px;
+}
+
+.listingSidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sellerCard {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.sellerIdentity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sellerIdentity strong,
+.sellerIdentity span {
+  display: block;
+}
+
+.sellerIdentity strong {
+  font-size: 14px;
+}
+
+.sellerIdentity span {
+  margin-top: 3px;
+  color: #777c89;
+  font-size: 11px;
+}
+
+.profileAvatar.small {
+  width: 45px;
+  height: 45px;
+  font-size: 17px;
+}
+
+.sellerRating {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 14px;
+  border-top: 1px solid #292c37;
+}
+
+.sellerRating strong {
+  font-size: 13px;
+}
+
+.sellerRating span {
+  color: #777c89;
+  font-size: 11px;
+}
+
+.sellerProfileButton {
+  text-align: center;
+  text-decoration: none;
+}
+
+.requestCard h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.requestCard p {
+  color: #777c89;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.requestButton {
+  width: 100%;
+  margin-top: 8px;
+}
+
+@media (max-width: 750px) {
+  .listingGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .listingHeader h1 {
+    font-size: 32px;
+  }
+}
