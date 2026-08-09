@@ -17,9 +17,9 @@ export default async function TradePage({
 
   if (!user) {
     return (
-      <main className="contentPage">
-        <div className="formMessage">
-          <p>Sign in to view this trade.</p>
+      <main className="page">
+        <div className="card">
+          <h1>Sign in to view this trade.</h1>
 
           <Link href="/auth" className="primary">
             Sign In
@@ -31,19 +31,21 @@ export default async function TradePage({
 
   const { data: trade } = await supabase
     .from("trades")
-    .select(`
-      id,
-      status,
-      requester_id,
-      owner_id,
-      created_at,
-      completed_at,
-      trade_listings (
+    .select(
+      `
         id,
-        title,
-        need_type
-      )
-    `)
+        status,
+        requester_id,
+        owner_id,
+        created_at,
+        completed_at,
+        trade_listings (
+          id,
+          title,
+          need_type
+        )
+      `
+    )
     .eq("id", tradeId)
     .single();
 
@@ -51,21 +53,20 @@ export default async function TradePage({
     notFound();
   }
 
-  const isRequester =
-    trade.requester_id === user.id;
-
-  const isOwner =
-    trade.owner_id === user.id;
+  const isRequester = trade.requester_id === user.id;
+  const isOwner = trade.owner_id === user.id;
 
   if (!isRequester && !isOwner) {
     return (
-      <main className="contentPage">
-        <div className="formMessage">
+      <main className="page">
+        <div className="card">
           <h1>Access denied</h1>
 
-          <p>
-            You aren't a participant in this trade.
-          </p>
+          <p>You aren't a participant in this trade.</p>
+
+          <Link href="/trades" className="primary">
+            My Trades
+          </Link>
         </div>
       </main>
     );
@@ -77,20 +78,20 @@ export default async function TradePage({
 
   const { data: otherProfile } = await supabase
     .from("profiles")
-    .select(
-      "username, display_name, avatar_url"
-    )
+    .select("username, display_name, avatar_url")
     .eq("id", otherUserId)
     .single();
 
   const { data: messages } = await supabase
     .from("trade_messages")
-    .select(`
-      id,
-      body,
-      sender_id,
-      created_at
-    `)
+    .select(
+      `
+        id,
+        body,
+        sender_id,
+        created_at
+      `
+    )
     .eq("trade_id", trade.id)
     .order("created_at", {
       ascending: true,
@@ -99,126 +100,119 @@ export default async function TradePage({
   let alreadyReviewed = false;
 
   if (trade.status === "completed") {
-    const { data: existingReview } =
-      await supabase
-        .from("trade_reviews")
-        .select("id")
-        .eq("trade_id", trade.id)
-        .eq("reviewer_id", user.id)
-        .maybeSingle();
+    const { data: existingReview } = await supabase
+      .from("trade_reviews")
+      .select("id")
+      .eq("trade_id", trade.id)
+      .eq("reviewer_id", user.id)
+      .maybeSingle();
 
     alreadyReviewed = !!existingReview;
   }
 
+  const listing = Array.isArray(trade.trade_listings)
+    ? trade.trade_listings[0]
+    : trade.trade_listings;
+
   return (
-    <main className="contentPage">
-      <Link
-        href="/trades"
-        className="backLink"
-      >
-        ← My Trades
-      </Link>
+    <main className="page">
+      <div className="tradePage">
+        <Link href="/trades" className="backLink">
+          ← My Trades
+        </Link>
 
-      <section className="tradeRoom">
-        <header className="tradeRoomHeader">
-          <div>
-            <div className="badge">
-              PRIVATE TRADE
+        <section className="tradeRoom">
+          <header className="tradeRoomHeader">
+            <div>
+              <div className="badge">PRIVATE TRADE</div>
+
+              <h1>{listing?.title || "Trade"}</h1>
+
+              <span className="tradeStatus">
+                {trade.status.toUpperCase()}
+              </span>
             </div>
+          </header>
 
-            <h1>
-              {(trade.trade_listings as any)?.title ||
-                "Trade"}
-            </h1>
+          <div className="tradePartner">
+            <span>TRADING WITH</span>
 
-            <span className="tradeStatus">
-              {trade.status.toUpperCase()}
-            </span>
+            <strong>
+              {otherProfile?.display_name ||
+                otherProfile?.username ||
+                "User"}
+            </strong>
+
+            <small>
+              @{otherProfile?.username || "unknown"}
+            </small>
           </div>
-        </header>
 
-        <div className="tradePartner">
-          <span>TRADING WITH</span>
+          <div className="tradeRules">
+            <strong>Trade protection</strong>
 
-          <strong>
-            {otherProfile?.display_name ||
-              otherProfile?.username ||
-              "User"}
-          </strong>
+            <p>
+              Keep communication inside this room.
+              Both participants must confirm the trade
+              before it becomes completed.
+            </p>
+          </div>
 
-          <small>
-            @{otherProfile?.username ||
-              "unknown"}
-          </small>
-        </div>
+          <div className="chatBox">
+            {messages && messages.length > 0 ? (
+              messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={
+                    message.sender_id === user.id
+                      ? "message own"
+                      : "message"
+                  }
+                >
+                  <span>
+                    {message.sender_id === user.id
+                      ? "You"
+                      : otherProfile?.username ||
+                        "Other participant"}
+                  </span>
 
-        <div className="tradeRules">
-          <strong>Trade protection</strong>
+                  <p>{message.body}</p>
 
-          <p>
-            Keep communication inside this room.
-            Both participants must confirm the trade
-            before it becomes completed.
-          </p>
-        </div>
-
-        <div className="chatBox">
-          {messages && messages.length > 0 ? (
-            messages.map((message) => (
-              <div
-                key={message.id}
-                className={
-                  message.sender_id === user.id
-                    ? "message own"
-                    : "message"
-                }
-              >
-                <span>
-                  {message.sender_id === user.id
-                    ? "You"
-                    : otherProfile?.username ||
-                      "Other participant"}
-                </span>
-
-                <p>{message.body}</p>
+                  <small>
+                    {new Date(
+                      message.created_at
+                    ).toLocaleString()}
+                  </small>
+                </div>
+              ))
+            ) : (
+              <div className="chatEmpty">
+                No messages yet. Start the conversation.
               </div>
-            ))
-          ) : (
-            <div className="chatEmpty">
-              No messages yet. Start the
-              conversation.
-            </div>
-          )}
-        </div>
+            )}
+          </div>
 
-        {trade.status !== "completed" &&
-          trade.status !== "cancelled" && (
-            <TradeMessageForm
+          {trade.status !== "completed" &&
+            trade.status !== "cancelled" && (
+              <>
+                <TradeMessageForm tradeId={trade.id} />
+
+                <TradeConfirmation tradeId={trade.id} />
+              </>
+            )}
+
+          {trade.status === "completed" && (
+            <ReviewSection
               tradeId={trade.id}
+              otherUserId={otherUserId}
+              otherUsername={
+                otherProfile?.username || "user"
+              }
+              alreadyReviewed={alreadyReviewed}
             />
           )}
-
-        {trade.status !== "completed" &&
-          trade.status !== "cancelled" && (
-            <TradeConfirmation
-              tradeId={trade.id}
-            />
-          )}
-
-        {trade.status === "completed" && (
-          <ReviewSection
-            tradeId={trade.id}
-            otherUserId={otherUserId}
-            otherUsername={
-              otherProfile?.username ||
-              "user"
-            }
-            alreadyReviewed={
-              alreadyReviewed
-            }
-          />
-        )}
-      </section>
+        </section>
+      </div>
     </main>
   );
 }
@@ -245,6 +239,7 @@ function TradeMessageForm({
         required
         maxLength={1000}
         placeholder="Write a message..."
+        autoComplete="off"
       />
 
       <button
@@ -282,8 +277,8 @@ function TradeConfirmation({
       </button>
 
       <small>
-        Both participants must confirm before
-        this trade becomes officially completed.
+        Both participants must confirm before this
+        trade becomes officially completed.
       </small>
     </form>
   );
@@ -302,26 +297,23 @@ function ReviewSection({
 }) {
   if (alreadyReviewed) {
     return (
-      <div className="formMessage">
+      <section className="reviewComplete">
         <strong>Review submitted</strong>
 
         <span>
-          You have already reviewed @
-          {otherUsername} for this trade.
+          You have already reviewed @{otherUsername} for
+          this trade.
         </span>
-      </div>
+      </section>
     );
   }
 
   return (
     <section className="reviewSection">
-      <div className="badge">
-        TRADE COMPLETED
-      </div>
+      <div className="badge">TRADE COMPLETED</div>
 
       <h2>
-        How was your trade with @
-        {otherUsername}?
+        How was your trade with @{otherUsername}?
       </h2>
 
       <form
