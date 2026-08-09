@@ -4,8 +4,10 @@ import { notFound } from "next/navigation";
 
 export default async function ListingPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ listingId: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   const { listingId } = await params;
 
