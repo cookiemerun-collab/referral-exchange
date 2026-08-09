@@ -51,10 +51,19 @@ const { error: requestError } =
   const isOwner = user?.id === listing.owner_id;
 
   return (
-    <main className="contentPage">
-      <Link href="/events" className="backLink">
-        ← Back to events
-      </Link>
+  <main className="contentPage">
+    {requestError && (
+      <div className="formMessage">
+        {requestError}
+      </div>
+    )}
+
+    <Link
+      href="/events"
+      className="backLink"
+    >
+      ← Back to Events
+    </Link>
 
       <section className="detailCard">
         <div className="listingTop">
