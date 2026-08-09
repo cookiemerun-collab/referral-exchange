@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -24,69 +24,90 @@ export async function POST(request: Request) {
     typeof body !== "string"
   ) {
     return NextResponse.json(
-      { error: "Invalid message." },
+      { error: "Invalid request." },
       { status: 400 }
     );
   }
 
   const message = body.trim();
 
-  if (!message || message.length > 1000) {
+  if (!message) {
     return NextResponse.json(
-      { error: "Invalid message length." },
+      { error: "Message cannot be empty." },
       { status: 400 }
     );
   }
 
-  const { data: trade } = await supabase
-    .from("trades")
-    .select("requester_id, owner_id, status")
-    .eq("id", tradeId)
-    .single();
+  if (message.length > 1000) {
+    return NextResponse.json(
+      { error: "Message is too long." },
+      { status: 400 }
+    );
+  }
 
-  if (!trade) {
+  const { data: trade, error: tradeError } =
+    await supabase
+      .from("trades")
+      .select(
+        `
+          id,
+          requester_id,
+          owner_id,
+          status
+        `
+      )
+      .eq("id", tradeId)
+      .single();
+
+  if (tradeError || !trade) {
     return NextResponse.json(
       { error: "Trade not found." },
       { status: 404 }
     );
   }
 
-  if (
-    user.id !== trade.requester_id &&
-    user.id !== trade.owner_id
-  ) {
+  const isParticipant =
+    trade.requester_id === user.id ||
+    trade.owner_id === user.id;
+
+  if (!isParticipant) {
     return NextResponse.json(
-      { error: "Access denied." },
+      { error: "You are not part of this trade." },
       { status: 403 }
     );
   }
 
   if (
-    trade.status === "cancelled" ||
-    trade.status === "completed"
+    trade.status === "completed" ||
+    trade.status === "cancelled"
   ) {
     return NextResponse.json(
-      { error: "This trade is closed." },
+      { error: "This trade is no longer active." },
       { status: 400 }
     );
   }
 
-  const { error } = await supabase
+  const { error: messageError } = await supabase
     .from("trade_messages")
     .insert({
-      trade_id: tradeId,
+      trade_id: trade.id,
       sender_id: user.id,
       body: message,
     });
 
-  if (error) {
+  if (messageError) {
+    console.error(
+      "Failed to create trade message:",
+      messageError
+    );
+
     return NextResponse.json(
-      { error: error.message },
-      { status: 400 }
+      { error: "Failed to send message." },
+      { status: 500 }
     );
   }
 
   return NextResponse.redirect(
-    new URL(`/trades/${tradeId}`, request.url)
+    new URL(`/trades/${trade.id}`, request.url)
   );
 }
