@@ -18,8 +18,8 @@ export default async function TradePage({
   if (!user) {
     return (
       <main className="contentPage">
-        <div className="emptyState">
-          <h2>Sign in to view this trade.</h2>
+        <div className="formMessage">
+          <p>Sign in to view this trade.</p>
 
           <Link href="/auth" className="primary">
             Sign In
@@ -60,8 +60,8 @@ export default async function TradePage({
   if (!isRequester && !isOwner) {
     return (
       <main className="contentPage">
-        <div className="emptyState">
-          <h2>Access denied</h2>
+        <div className="formMessage">
+          <h1>Access denied</h1>
 
           <p>
             You aren't a participant in this trade.
@@ -112,7 +112,10 @@ export default async function TradePage({
 
   return (
     <main className="contentPage">
-      <Link href="/trades" className="backLink">
+      <Link
+        href="/trades"
+        className="backLink"
+      >
         ← My Trades
       </Link>
 
@@ -182,7 +185,8 @@ export default async function TradePage({
             ))
           ) : (
             <div className="chatEmpty">
-              No messages yet. Start the conversation.
+              No messages yet. Start the
+              conversation.
             </div>
           )}
         </div>
@@ -262,7 +266,7 @@ function TradeConfirmation({
     <form
       action="/api/trades/confirm"
       method="POST"
-      className="confirmation"
+      className="confirmationForm"
     >
       <input
         type="hidden"
@@ -298,25 +302,26 @@ function ReviewSection({
 }) {
   if (alreadyReviewed) {
     return (
-      <div className="reviewSubmitted">
+      <div className="formMessage">
         <strong>Review submitted</strong>
 
         <span>
-          You have already reviewed @{otherUsername}
-          for this trade.
+          You have already reviewed @
+          {otherUsername} for this trade.
         </span>
       </div>
     );
   }
 
   return (
-    <section className="tradeReview">
+    <section className="reviewSection">
       <div className="badge">
         TRADE COMPLETED
       </div>
 
       <h2>
-        How was your trade with @{otherUsername}?
+        How was your trade with @
+        {otherUsername}?
       </h2>
 
       <form
