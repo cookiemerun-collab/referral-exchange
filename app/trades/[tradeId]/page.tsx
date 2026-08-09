@@ -41,8 +41,7 @@ export default async function TradePage({
       trade_listings (
         id,
         title,
-        need_type,
-        referral_url
+        need_type
       )
     `)
     .eq("id", tradeId)
@@ -52,20 +51,37 @@ export default async function TradePage({
     notFound();
   }
 
-  const isParticipant =
-    trade.requester_id === user.id ||
+  const isRequester =
+    trade.requester_id === user.id;
+
+  const isOwner =
     trade.owner_id === user.id;
 
-  if (!isParticipant) {
+  if (!isRequester && !isOwner) {
     return (
       <main className="contentPage">
         <div className="emptyState">
           <h2>Access denied</h2>
-          <p>You aren't a participant in this trade.</p>
+
+          <p>
+            You aren't a participant in this trade.
+          </p>
         </div>
       </main>
     );
   }
+
+  const otherUserId = isRequester
+    ? trade.owner_id
+    : trade.requester_id;
+
+  const { data: otherProfile } = await supabase
+    .from("profiles")
+    .select(
+      "username, display_name, avatar_url"
+    )
+    .eq("id", otherUserId)
+    .single();
 
   const { data: messages } = await supabase
     .from("trade_messages")
@@ -80,6 +96,20 @@ export default async function TradePage({
       ascending: true,
     });
 
+  let alreadyReviewed = false;
+
+  if (trade.status === "completed") {
+    const { data: existingReview } =
+      await supabase
+        .from("trade_reviews")
+        .select("id")
+        .eq("trade_id", trade.id)
+        .eq("reviewer_id", user.id)
+        .maybeSingle();
+
+    alreadyReviewed = !!existingReview;
+  }
+
   return (
     <main className="contentPage">
       <Link href="/trades" className="backLink">
@@ -89,7 +119,9 @@ export default async function TradePage({
       <section className="tradeRoom">
         <header className="tradeRoomHeader">
           <div>
-            <div className="badge">PRIVATE TRADE</div>
+            <div className="badge">
+              PRIVATE TRADE
+            </div>
 
             <h1>
               {(trade.trade_listings as any)?.title ||
@@ -102,13 +134,28 @@ export default async function TradePage({
           </div>
         </header>
 
+        <div className="tradePartner">
+          <span>TRADING WITH</span>
+
+          <strong>
+            {otherProfile?.display_name ||
+              otherProfile?.username ||
+              "User"}
+          </strong>
+
+          <small>
+            @{otherProfile?.username ||
+              "unknown"}
+          </small>
+        </div>
+
         <div className="tradeRules">
           <strong>Trade protection</strong>
 
           <p>
-            Keep communication inside this room. A trade is
-            only counted as completed after both participants
-            confirm it.
+            Keep communication inside this room.
+            Both participants must confirm the trade
+            before it becomes completed.
           </p>
         </div>
 
@@ -126,7 +173,8 @@ export default async function TradePage({
                 <span>
                   {message.sender_id === user.id
                     ? "You"
-                    : "Other participant"}
+                    : otherProfile?.username ||
+                      "Other participant"}
                 </span>
 
                 <p>{message.body}</p>
@@ -139,12 +187,33 @@ export default async function TradePage({
           )}
         </div>
 
-        <TradeMessageForm tradeId={trade.id} />
+        {trade.status !== "completed" &&
+          trade.status !== "cancelled" && (
+            <TradeMessageForm
+              tradeId={trade.id}
+            />
+          )}
 
-        <TradeConfirmation
-          tradeId={trade.id}
-          status={trade.status}
-        />
+        {trade.status !== "completed" &&
+          trade.status !== "cancelled" && (
+            <TradeConfirmation
+              tradeId={trade.id}
+            />
+          )}
+
+        {trade.status === "completed" && (
+          <ReviewSection
+            tradeId={trade.id}
+            otherUserId={otherUserId}
+            otherUsername={
+              otherProfile?.username ||
+              "user"
+            }
+            alreadyReviewed={
+              alreadyReviewed
+            }
+          />
+        )}
       </section>
     </main>
   );
@@ -174,7 +243,10 @@ function TradeMessageForm({
         placeholder="Write a message..."
       />
 
-      <button className="primary">
+      <button
+        className="primary"
+        type="submit"
+      >
         Send
       </button>
     </form>
@@ -183,22 +255,9 @@ function TradeMessageForm({
 
 function TradeConfirmation({
   tradeId,
-  status,
 }: {
   tradeId: string;
-  status: string;
 }) {
-  if (
-    status === "completed" ||
-    status === "cancelled"
-  ) {
-    return (
-      <div className="tradeCompleted">
-        This trade is {status}.
-      </div>
-    );
-  }
-
   return (
     <form
       action="/api/trades/confirm"
@@ -211,14 +270,120 @@ function TradeConfirmation({
         value={tradeId}
       />
 
-      <button className="secondary">
+      <button
+        className="secondary"
+        type="submit"
+      >
         Confirm Trade Completed
       </button>
 
       <small>
-        Both participants must confirm before this trade
-        becomes officially completed.
+        Both participants must confirm before
+        this trade becomes officially completed.
       </small>
     </form>
+  );
+}
+
+function ReviewSection({
+  tradeId,
+  otherUserId,
+  otherUsername,
+  alreadyReviewed,
+}: {
+  tradeId: string;
+  otherUserId: string;
+  otherUsername: string;
+  alreadyReviewed: boolean;
+}) {
+  if (alreadyReviewed) {
+    return (
+      <div className="reviewSubmitted">
+        <strong>Review submitted</strong>
+
+        <span>
+          You have already reviewed @{otherUsername}
+          for this trade.
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <section className="tradeReview">
+      <div className="badge">
+        TRADE COMPLETED
+      </div>
+
+      <h2>
+        How was your trade with @{otherUsername}?
+      </h2>
+
+      <form
+        action="/api/trades/review"
+        method="POST"
+        className="reviewForm"
+      >
+        <input
+          type="hidden"
+          name="tradeId"
+          value={tradeId}
+        />
+
+        <input
+          type="hidden"
+          name="reviewedId"
+          value={otherUserId}
+        />
+
+        <label>
+          Rating
+
+          <select
+            name="rating"
+            required
+            defaultValue="5"
+          >
+            <option value="5">
+              5 — Excellent
+            </option>
+
+            <option value="4">
+              4 — Good
+            </option>
+
+            <option value="3">
+              3 — Okay
+            </option>
+
+            <option value="2">
+              2 — Poor
+            </option>
+
+            <option value="1">
+              1 — Very poor
+            </option>
+          </select>
+        </label>
+
+        <label>
+          Comment
+
+          <textarea
+            name="comment"
+            maxLength={500}
+            rows={4}
+            placeholder="How did the trade go?"
+          />
+        </label>
+
+        <button
+          className="primary"
+          type="submit"
+        >
+          Submit Verified Review
+        </button>
+      </form>
+    </section>
   );
 }
