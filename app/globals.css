@@ -1149,3 +1149,9 @@ a {
     font-size: 32px;
   }
 }
+
+.listingExpiry {
+  color: #777c89;
+  font-size: 11px;
+  margin-top: 2px;
+}
