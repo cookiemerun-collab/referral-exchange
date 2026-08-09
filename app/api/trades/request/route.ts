@@ -38,58 +38,67 @@ export async function POST(request: Request) {
     );
 
   if (error) {
-    const message =
+    let message =
+      "We couldn't create the trade request.";
+
+    const errorMessage =
       error.message.toLowerCase();
 
     if (
-      message.includes("own listing")
+      errorMessage.includes(
+        "own listing"
+      )
     ) {
-      return NextResponse.json(
-        {
-          error:
-            "You cannot request your own listing.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    if (
-      message.includes(
+      message =
+        "You cannot request your own listing.";
+    } else if (
+      errorMessage.includes(
         "already have a request"
       )
     ) {
-      return NextResponse.json(
-        {
-          error:
-            "You already have a request for this listing.",
-        },
-        {
-          status: 400,
-        }
-      );
+      message =
+        "You already requested this listing.";
+    } else if (
+      errorMessage.includes(
+        "no longer open"
+      )
+    ) {
+      message =
+        "This listing is no longer open.";
+    } else if (
+      errorMessage.includes(
+        "expired"
+      )
+    ) {
+      message =
+        "This listing has expired.";
+    } else if (
+      errorMessage.includes(
+        "event is no longer active"
+      )
+    ) {
+      message =
+        "This event is no longer active.";
     }
 
-    return NextResponse.json(
-      {
-        error: error.message,
-      },
-      {
-        status: 400,
-      }
+    return NextResponse.redirect(
+      new URL(
+        `/listings/${listingId}?error=${encodeURIComponent(
+          message
+        )}`,
+        request.url
+      )
     );
   }
 
   if (!tradeId) {
-    return NextResponse.json(
-      {
-        error:
-          "The trade could not be created.",
-      },
-      {
-        status: 500,
-      }
+    return NextResponse.redirect(
+      new URL(
+        `/listings/${listingId}?error=${encodeURIComponent(
+          "The trade could not be created."
+        )}`,
+        request.url
+      )
     );
   }
 
