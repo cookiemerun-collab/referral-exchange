@@ -627,3 +627,76 @@ a {
   background: #102319;
   color: #8be6ac;
 }
+
+/* LEADERBOARD */
+
+.leaderboard {
+  max-width: 900px;
+  margin: 0 auto;
+  border: 1px solid #292c37;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #0e1016;
+}
+
+.leaderboardRow {
+  display: grid;
+  grid-template-columns: 60px 45px 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 17px 20px;
+  border-bottom: 1px solid #252833;
+}
+
+.leaderboardRow:last-child {
+  border-bottom: 0;
+}
+
+.rank {
+  color: #777c89;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.playerInfo strong,
+.playerInfo span,
+.rating strong,
+.rating span {
+  display: block;
+}
+
+.playerInfo strong {
+  font-size: 14px;
+}
+
+.playerInfo span {
+  color: #777c89;
+  font-size: 12px;
+  margin-top: 3px;
+}
+
+.rating {
+  text-align: right;
+}
+
+.rating strong {
+  color: #f4d87c;
+  font-size: 14px;
+}
+
+.rating span {
+  color: #777c89;
+  font-size: 11px;
+  margin-top: 3px;
+}
+
+@media (max-width: 600px) {
+  .leaderboardRow {
+    grid-template-columns: 35px 40px 1fr;
+  }
+
+  .rating {
+    grid-column: 3;
+    text-align: left;
+  }
+}
