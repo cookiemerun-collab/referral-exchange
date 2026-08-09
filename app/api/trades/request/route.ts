@@ -29,63 +29,48 @@ export async function POST(request: Request) {
     );
   }
 
-  const { data: listing, error: listingError } =
-    await supabase
-      .from("trade_listings")
-      .select(
-        `
-        id,
-        owner_id,
-        status
-      `
-      )
-      .eq("id", listingId)
-      .single();
-
-  if (listingError || !listing) {
-    return NextResponse.json(
+  const { data: tradeId, error } =
+    await supabase.rpc(
+      "create_trade_request",
       {
-        error: "Listing not found.",
-      },
-      {
-        status: 404,
+        target_listing_id: listingId,
       }
     );
-  }
-
-  if (listing.owner_id === user.id) {
-    return NextResponse.json(
-      {
-        error: "You cannot request your own listing.",
-      },
-      {
-        status: 400,
-      }
-    );
-  }
-
-  if (listing.status !== "open") {
-    return NextResponse.json(
-      {
-        error: "This listing is no longer open.",
-      },
-      {
-        status: 400,
-      }
-    );
-  }
-
-  const { data: trade, error } = await supabase
-    .from("trades")
-    .insert({
-      listing_id: listing.id,
-      requester_id: user.id,
-      owner_id: listing.owner_id,
-    })
-    .select("id")
-    .single();
 
   if (error) {
+    const message =
+      error.message.toLowerCase();
+
+    if (
+      message.includes("own listing")
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "You cannot request your own listing.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (
+      message.includes(
+        "already have a request"
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "You already have a request for this listing.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
     return NextResponse.json(
       {
         error: error.message,
@@ -96,14 +81,22 @@ export async function POST(request: Request) {
     );
   }
 
-  await supabase
-    .from("trade_listings")
-    .update({
-      status: "matched",
-    })
-    .eq("id", listing.id);
+  if (!tradeId) {
+    return NextResponse.json(
+      {
+        error:
+          "The trade could not be created.",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
 
   return NextResponse.redirect(
-    new URL(`/trades/${trade.id}`, request.url)
+    new URL(
+      `/trades/${tradeId}`,
+      request.url
+    )
   );
 }
