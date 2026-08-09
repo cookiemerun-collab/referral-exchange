@@ -16,7 +16,9 @@ export default function NewListingPage() {
   const [eventId, setEventId] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [needType, setNeedType] = useState<"new" | "existing">("new");
+  const [needType, setNeedType] = useState<
+    "new" | "existing"
+  >("new");
   const [referralUrl, setReferralUrl] = useState("");
 
   const [loading, setLoading] = useState(true);
@@ -39,7 +41,9 @@ export default function NewListingPage() {
         .from("events")
         .select("id, name, slug")
         .eq("status", "active")
-        .order("created_at", { ascending: false });
+        .order("created_at", {
+          ascending: false,
+        });
 
       if (error) {
         setMessage(error.message);
@@ -70,16 +74,40 @@ export default function NewListingPage() {
       return;
     }
 
+    const trimmedTitle = title.trim();
+    const trimmedDescription = description.trim();
     const trimmedUrl = referralUrl.trim();
+
+    if (trimmedTitle.length < 3) {
+      setMessage("Title must be at least 3 characters.");
+      setSubmitting(false);
+      return;
+    }
+
+    if (trimmedTitle.length > 120) {
+      setMessage("Title cannot exceed 120 characters.");
+      setSubmitting(false);
+      return;
+    }
+
+    if (trimmedDescription.length > 1000) {
+      setMessage(
+        "Description cannot exceed 1000 characters."
+      );
+      setSubmitting(false);
+      return;
+    }
 
     try {
       const parsedUrl = new URL(trimmedUrl);
 
       if (parsedUrl.protocol !== "https:") {
-        throw new Error("The referral link must use HTTPS.");
+        throw new Error();
       }
     } catch {
-      setMessage("Please enter a valid HTTPS referral link.");
+      setMessage(
+        "Please enter a valid HTTPS referral link."
+      );
       setSubmitting(false);
       return;
     }
@@ -93,22 +121,36 @@ export default function NewListingPage() {
       return;
     }
 
-    const { error } = await supabase.from("trade_listings").insert({
-      event_id: eventId,
-      owner_id: user.id,
-      title: title.trim(),
-      description: description.trim() || null,
-      need_type: needType,
-      referral_url: trimmedUrl,
-    });
+    /*
+     * IMPORTANT:
+     * We use the protected database function instead
+     * of inserting directly into trade_listings.
+     *
+     * This means the one-listing-per-day rule is
+     * enforced by Supabase itself.
+     */
+
+    const { data: listingId, error } =
+      await supabase.rpc("create_trade_listing", {
+        target_event_id: eventId,
+        target_title: trimmedTitle,
+        target_description:
+          trimmedDescription || null,
+        target_need_type: needType,
+        target_referral_url: trimmedUrl,
+      });
 
     if (error) {
+      const errorMessage =
+        error.message.toLowerCase();
+
       if (
-        error.message.toLowerCase().includes("already used") ||
-        error.message.toLowerCase().includes("today")
+        errorMessage.includes(
+          "only create one listing per day"
+        )
       ) {
         setMessage(
-          "You've already used your submission for today. Try again tomorrow."
+          "You've already created a listing today. Try again tomorrow."
         );
       } else {
         setMessage(error.message);
@@ -119,7 +161,21 @@ export default function NewListingPage() {
     }
 
     setSuccess(true);
-    setMessage("Your listing was created successfully.");
+
+    /*
+     * Send the user directly to the listing they
+     * just created.
+     */
+
+    if (listingId) {
+      window.location.href =
+        `/listings/${listingId}`;
+      return;
+    }
+
+    setMessage(
+      "Your listing was created successfully."
+    );
 
     setTitle("");
     setDescription("");
@@ -132,7 +188,7 @@ export default function NewListingPage() {
     return (
       <main className="contentPage">
         <div className="emptyState">
-          Loading...
+          <h2>Loading...</h2>
         </div>
       </main>
     );
@@ -142,13 +198,15 @@ export default function NewListingPage() {
     <main className="contentPage">
       <section className="pageHeader">
         <div>
-          <div className="badge">NEW LISTING</div>
+          <div className="badge">
+            NEW LISTING
+          </div>
 
           <h1>Create a Listing</h1>
 
           <p>
-            Post your referral for other eligible community members
-            to find.
+            Post your referral for other eligible
+            community members to find.
           </p>
         </div>
       </section>
@@ -160,7 +218,9 @@ export default function NewListingPage() {
 
             <select
               value={eventId}
-              onChange={(event) => setEventId(event.target.value)}
+              onChange={(event) =>
+                setEventId(event.target.value)
+              }
               required
             >
               {events.length === 0 ? (
@@ -187,7 +247,7 @@ export default function NewListingPage() {
               type="text"
               required
               minLength={3}
-              maxLength={80}
+              maxLength={120}
               value={title}
               onChange={(event) =>
                 setTitle(event.target.value)
@@ -196,7 +256,7 @@ export default function NewListingPage() {
             />
 
             <small>
-              {title.length}/80
+              {title.length}/120
             </small>
           </label>
 
@@ -204,7 +264,7 @@ export default function NewListingPage() {
             Description
 
             <textarea
-              maxLength={500}
+              maxLength={1000}
               value={description}
               onChange={(event) =>
                 setDescription(event.target.value)
@@ -214,7 +274,7 @@ export default function NewListingPage() {
             />
 
             <small>
-              {description.length}/500
+              {description.length}/1000
             </small>
           </label>
 
@@ -225,7 +285,9 @@ export default function NewListingPage() {
               value={needType}
               onChange={(event) =>
                 setNeedType(
-                  event.target.value as "new" | "existing"
+                  event.target.value as
+                    | "new"
+                    | "existing"
                 )
               }
             >
@@ -258,12 +320,14 @@ export default function NewListingPage() {
           </label>
 
           <div className="dailyLimitNotice">
-            <strong>1 submission per day</strong>
+            <strong>
+              1 listing per day
+            </strong>
 
             <span>
-              Creating this listing uses today's submission.
-              You won't be able to create another listing or
-              request another trade until tomorrow.
+              Each account can create one listing
+              every 24 hours/day cycle. The limit is
+              enforced by the database.
             </span>
           </div>
 
@@ -273,6 +337,7 @@ export default function NewListingPage() {
               submitting ||
               events.length === 0
             }
+            type="submit"
           >
             {submitting
               ? "Creating..."
