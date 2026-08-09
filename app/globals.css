@@ -878,3 +878,13 @@ a {
     flex-direction: column;
   }
 }
+
+.leaderboardProfile {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.leaderboardProfile:hover strong {
+  color: #a69cff;
+}
