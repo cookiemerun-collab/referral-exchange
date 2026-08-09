@@ -10,6 +10,8 @@ export default async function ListingPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { listingId } = await params;
+const { error: requestError } =
+  await searchParams;
 
   const supabase = await createClient();
 
