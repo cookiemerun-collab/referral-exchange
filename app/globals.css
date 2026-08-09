@@ -888,3 +888,95 @@ a {
 .leaderboardProfile:hover strong {
   color: #a69cff;
 }
+
+/* TRADE REVIEWS */
+
+.tradePartner {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 18px;
+  margin: 20px 0;
+  border: 1px solid #292c37;
+  border-radius: 12px;
+  background: #0b0d12;
+}
+
+.tradePartner span {
+  color: #777c89;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.tradePartner strong {
+  font-size: 16px;
+}
+
+.tradePartner small {
+  color: #777c89;
+}
+
+.tradeReview {
+  margin-top: 30px;
+  padding: 25px;
+  border: 1px solid #292c37;
+  border-radius: 14px;
+  background: #0e1016;
+}
+
+.tradeReview h2 {
+  margin: 12px 0 22px;
+  font-size: 24px;
+}
+
+.reviewForm {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.reviewForm label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #d7d9e0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.reviewForm select,
+.reviewForm textarea {
+  width: 100%;
+  border: 1px solid #303440;
+  border-radius: 9px;
+  background: #08090d;
+  color: white;
+  padding: 12px;
+  font: inherit;
+  outline: none;
+}
+
+.reviewForm textarea {
+  resize: vertical;
+}
+
+.reviewSubmitted {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 30px;
+  padding: 18px;
+  border: 1px solid #244631;
+  border-radius: 12px;
+  background: #102319;
+}
+
+.reviewSubmitted strong {
+  color: #8be6ac;
+}
+
+.reviewSubmitted span {
+  color: #9ca1b0;
+  font-size: 13px;
+}
