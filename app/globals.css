@@ -525,3 +525,105 @@ a {
     gap: 15px;
   }
 }
+
+/* FORMS */
+
+.formCard {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px;
+  background: #0e1016;
+  border: 1px solid #292c37;
+  border-radius: 18px;
+}
+
+.formCard form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.formCard label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #d7d9e0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.formCard input,
+.formCard textarea,
+.formCard select {
+  width: 100%;
+  border: 1px solid #303440;
+  border-radius: 9px;
+  background: #08090d;
+  color: white;
+  padding: 13px 14px;
+  font: inherit;
+  outline: none;
+}
+
+.formCard textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.formCard input:focus,
+.formCard textarea:focus,
+.formCard select:focus {
+  border-color: #7c5cff;
+}
+
+.formCard small {
+  color: #6f7482;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.dailyLimitNotice {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid #38314f;
+  border-radius: 10px;
+  background: #14121f;
+}
+
+.dailyLimitNotice strong {
+  color: #b0a6ff;
+  font-size: 13px;
+}
+
+.dailyLimitNotice span {
+  color: #9296a4;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.formSubmit {
+  border: 0;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.formSubmit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.formMessage {
+  padding: 13px;
+  border-radius: 9px;
+  background: #24151a;
+  color: #ffabb9;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.formMessage.success {
+  background: #102319;
+  color: #8be6ac;
+}
